@@ -1,5 +1,10 @@
 module DistributedImageReconstruction
 
-# Write your package code here.
+using Dagger
+using AbstractImageReconstruction
+
+abstract type AbstractDistributedReconstructionAlgorithm{A} <: AbstractImageReconstructionAlgorithm end
+
+include("DistributedReconstructionAlgorithm.jl")
 
 end
