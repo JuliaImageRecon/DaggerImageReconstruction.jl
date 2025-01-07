@@ -3,8 +3,11 @@ module DistributedImageReconstruction
 using Dagger
 using AbstractImageReconstruction
 
+import AbstractImageReconstruction: process, build, toDictValue!, showtree, showproperty, INDENT, PIPE, TEE, ELBOW
+
 abstract type AbstractDistributedReconstructionAlgorithm{A} <: AbstractImageReconstructionAlgorithm end
 
+include("Utils.jl")
 include("DistributedReconstructionAlgorithm.jl")
 
 end

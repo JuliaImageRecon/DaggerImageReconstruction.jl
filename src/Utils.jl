@@ -1,0 +1,1 @@
+chunktype(::Dagger.Chunk{T}) where T = T

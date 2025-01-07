@@ -61,3 +61,26 @@ function AbstractImageReconstruction.build(plan::RecoPlan{DistributedReconstruct
   end
   return DistributedReconstructionParameter(algo, worker)
 end
+
+# Do not serialize the the worker and collect the remote algo
+AbstractImageReconstruction.toDictValue!(dict, plan::RecoPlan{DistributedReconstructionParameter}) = dict["algo"] = fetch(Dagger.@spawn toDict(plan.algo))
+
+function AbstractImageReconstruction.showtree(io::IO, property::RecoPlan{DistributedReconstructionParameter}, indent::String, depth::Int)
+  print(io, indent, ELBOW, "algo", "::$(chunktype(property.algo)) [Distributed, Worker $(property.worker)]", "\n")
+  output = fetch(Dagger.spawn(property.algo) do algo
+      buffer = IOBuffer()
+      showtree(buffer, algo, indent * INDENT, depth + 1)
+      seekstart(buffer)
+      return read(buffer)
+    end
+  )
+  write(io, output)
+end
+
+function AbstractImageReconstruction.clear!(plan::RecoPlan{DistributedReconstructionParameter}, preserve::Bool = true)
+  if preserve && !ismissing(plan.algo)
+      wait(Dagger.@spawn clear!(plan.algo))
+  else
+    getfield(plan, :values)[:algo] = Observable{Any}(missing)
+  end
+end
