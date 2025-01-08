@@ -1,5 +1,6 @@
 module DistributedImageReconstruction
 
+using Distributed
 using Dagger
 using AbstractImageReconstruction
 

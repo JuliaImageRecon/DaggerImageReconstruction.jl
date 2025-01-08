@@ -6,7 +6,7 @@ struct DistributedReconstructionParameter{T} <: AbstractImageReconstructionParam
   # Not entirely sure how to handle arbitrary scopes with RecoPlans atm
   # DistributedReconstructionParameter(algo::Dagger.Chunk{T}, scope::Dagger.AbstractScope) where T = new{T}(algo, scope)
 end
-DistributedReconstructionParameter(; algo, worker = 1) = DistributedReconstructionParameter(algo, worker)
+DistributedReconstructionParameter(; algo, worker = myid()) = DistributedReconstructionParameter(algo, worker)
 function DistributedReconstructionParameter(algo, worker::Int64)
   chunk = Dagger.@mutable worker = worker algo
   return DistributedReconstructionParameter(chunk, worker)
@@ -79,8 +79,20 @@ end
 
 function AbstractImageReconstruction.clear!(plan::RecoPlan{DistributedReconstructionParameter}, preserve::Bool = true)
   if preserve && !ismissing(plan.algo)
-      wait(Dagger.@spawn clear!(plan.algo))
+      wait(Dagger.@spawn AbstractImageReconstruction.clear!(plan.algo))
   else
     getfield(plan, :values)[:algo] = Observable{Any}(missing)
   end
+end
+
+# First load the plan in the current worker, then make it chunk for the current worker. Afterwards with setproperty! one can move the chunk to another process 
+function AbstractImageReconstruction.loadPlan!(plan::RecoPlan{DistributedReconstructionParameter}, dict::Dict{String, Any}, modDict)
+  algo = missing
+  if haskey(dict, "algo")
+    algo = AbstractImageReconstruction.loadPlan!(dict["algo"], modDict)
+    parent!(algo, plan)
+  end
+  plan.algo = Dagger.@mutable worker = myid() algo
+  plan.worker = myid()
+  return plan
 end
