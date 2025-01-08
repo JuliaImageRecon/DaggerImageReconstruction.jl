@@ -96,3 +96,56 @@ function AbstractImageReconstruction.loadPlan!(plan::RecoPlan{DistributedReconst
   plan.worker = myid()
   return plan
 end
+
+function AbstractImageReconstruction.setAll!(plan::RecoPlan{DistributedReconstructionParameter}, name::Symbol, x)
+  if !ismissing(plan.algo)
+    wait(Dagger.spawn(plan.algo) do algo
+      if algo isa RecoPlan
+        setAll!(algo, name, x)
+      end
+    end)
+  end
+
+  # Set the value of the field
+  if hasproperty(plan, name)
+    try
+      Base.setproperty!(plan, name, x)
+    catch ex
+      @error ex
+      @warn "Could not set $name of $T with value of type $(typeof(x))"
+    end
+  end
+end
+function Base.setproperty!(plan::RecoPlan{DistributedReconstructionParameter}, name::Symbol, x)
+  if !haskey(getfield(plan, :values), name)
+    error("type $T has no field $name")
+  end
+
+  t = type(plan, name)
+  value = missing
+  if AbstractImageReconstruction.validvalue(plan, t, x) 
+    value = x
+  else
+    value = convert(t, x)
+  end
+
+  if value isa RecoPlan
+    parent!(value, plan)
+  end
+
+  # When we change the worker, we move the chunk around
+  if name == :worker
+    if !ismissing(plan.algo)
+      plan.algo = Dagger.@mutable worker = value collect(plan.algo)
+    end
+    getfield(plan, :values)[name][] = value
+  end
+
+  if name == :algo
+    getfield(plan, :values)[name][] = Dagger.@mutable worker = plan.worker value
+  end
+
+  return Base.getproperty(plan, name)
+end
+AbstractImageReconstruction.validvalue(plan::RecoPlan{DistributedReconstructionParameter}, ::Type{<:Dagger.Chunk}, value::Union{AbstractImageReconstructionAlgorithm, RecoPlan{<:AbstractImageReconstructionAlgorithm}}) = true
+AbstractImageReconstruction.validvalue(plan::RecoPlan{DistributedReconstructionParameter}, ::Type{<:Dagger.Chunk}, value) = false
