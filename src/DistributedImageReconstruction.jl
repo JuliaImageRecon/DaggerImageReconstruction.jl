@@ -9,6 +9,7 @@ import AbstractImageReconstruction: process, build, toDictValue!, showtree, show
 abstract type AbstractDistributedReconstructionAlgorithm{A} <: AbstractImageReconstructionAlgorithm end
 
 include("Utils.jl")
+include("DistributedRecoPlan.jl")
 include("DistributedReconstructionAlgorithm.jl")
 
 end

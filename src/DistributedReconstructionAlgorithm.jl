@@ -41,17 +41,21 @@ function AbstractImageReconstruction.process(algo::DistributedReconstructionAlgo
   put!(algo.output, result)
 end
 
+getchunk(plan::RecoPlan{DistributedReconstructionParameter}, name::Symbol) = getfield(plan, :values)[name][]
+function setchunk!(plan::RecoPlan{DistributedReconstructionParameter}, name::Symbol, chunk)
+  getfield(plan, :values)[name][] = chunk
+end
 function AbstractImageReconstruction.toPlan(param::DistributedReconstructionParameter)
   plan = RecoPlan(DistributedReconstructionParameter)
   plan.worker = param.worker
-  plan.algo = Dagger.@mutable worker = param.worker fetch(Dagger.spawn(param.algo) do algo 
+  setchunk!(plan, :algo, Dagger.@mutable worker = param.worker fetch(Dagger.spawn(param.algo) do algo 
       toPlan(algo)
-    end)
+    end))
   return plan
 end
 function AbstractImageReconstruction.build(plan::RecoPlan{DistributedReconstructionParameter})
   worker = plan.worker
-  algo = plan.algo
+  algo = getchunk(plan, :algo)
   if algo isa Dagger.Chunk
     algo = Dagger.@mutable worker = worker fetch(Dagger.spawn(algo) do tmp
       build(tmp)
@@ -63,11 +67,11 @@ function AbstractImageReconstruction.build(plan::RecoPlan{DistributedReconstruct
 end
 
 # Do not serialize the the worker and collect the remote algo
-AbstractImageReconstruction.toDictValue!(dict, plan::RecoPlan{DistributedReconstructionParameter}) = dict["algo"] = fetch(Dagger.@spawn toDict(plan.algo))
+AbstractImageReconstruction.toDictValue!(dict, plan::RecoPlan{DistributedReconstructionParameter}) = dict["algo"] = fetch(Dagger.@spawn toDict(getchunk(plan, :algo)))
 
 function AbstractImageReconstruction.showtree(io::IO, property::RecoPlan{DistributedReconstructionParameter}, indent::String, depth::Int)
-  print(io, indent, ELBOW, "algo", "::$(chunktype(property.algo)) [Distributed, Worker $(property.worker)]", "\n")
-  output = fetch(Dagger.spawn(property.algo) do algo
+  print(io, indent, ELBOW, "algo", "::$((getfield(property, :values)[:algo][]).chunktype) [Distributed, Worker $(property.worker)]", "\n")
+  output = fetch(Dagger.spawn(getchunk(property, :algo)) do algo
       buffer = IOBuffer()
       showtree(buffer, algo, indent * INDENT, depth + 1)
       seekstart(buffer)
@@ -78,8 +82,8 @@ function AbstractImageReconstruction.showtree(io::IO, property::RecoPlan{Distrib
 end
 
 function AbstractImageReconstruction.clear!(plan::RecoPlan{DistributedReconstructionParameter}, preserve::Bool = true)
-  if preserve && !ismissing(plan.algo)
-      wait(Dagger.@spawn AbstractImageReconstruction.clear!(plan.algo))
+  if preserve && !ismissing(getchunk(plan, :algo))
+      wait(Dagger.@spawn AbstractImageReconstruction.clear!(getchunk(plan, :algo)))
   else
     getfield(plan, :values)[:algo] = Observable{Any}(missing)
   end
@@ -92,14 +96,14 @@ function AbstractImageReconstruction.loadPlan!(plan::RecoPlan{DistributedReconst
     algo = AbstractImageReconstruction.loadPlan!(dict["algo"], modDict)
     parent!(algo, plan)
   end
-  plan.algo = Dagger.@mutable worker = myid() algo
+  setchunk(plan, :algo, Dagger.@mutable worker = myid() algo)
   plan.worker = myid()
   return plan
 end
 
 function AbstractImageReconstruction.setAll!(plan::RecoPlan{DistributedReconstructionParameter}, name::Symbol, x)
-  if !ismissing(plan.algo)
-    wait(Dagger.spawn(plan.algo) do algo
+  if !ismissing(getchunk(plan, :algo))
+    wait(Dagger.spawn(getchunk(plan, :algo)) do algo
       if algo isa RecoPlan
         setAll!(algo, name, x)
       end
@@ -135,17 +139,29 @@ function Base.setproperty!(plan::RecoPlan{DistributedReconstructionParameter}, n
 
   # When we change the worker, we move the chunk around
   if name == :worker
-    if !ismissing(plan.algo)
-      plan.algo = Dagger.@mutable worker = value collect(plan.algo)
+    if !ismissing(getchunk(plan, :algo))
+      setchunk!(plan, :algo, Dagger.@mutable worker = value collect(getchunk(plan, :algo)))
     end
     getfield(plan, :values)[name][] = value
   end
 
   if name == :algo
-    getfield(plan, :values)[name][] = Dagger.@mutable worker = plan.worker value
+    setchunk(plan, :algo, Dagger.@mutable worker = plan.worker value)
   end
 
   return Base.getproperty(plan, name)
 end
 AbstractImageReconstruction.validvalue(plan::RecoPlan{DistributedReconstructionParameter}, ::Type{<:Dagger.Chunk}, value::Union{AbstractImageReconstructionAlgorithm, RecoPlan{<:AbstractImageReconstructionAlgorithm}}) = true
+AbstractImageReconstruction.validvalue(plan::RecoPlan{DistributedReconstructionParameter}, ::Type{<:Dagger.Chunk}, value::Missing) = true
 AbstractImageReconstruction.validvalue(plan::RecoPlan{DistributedReconstructionParameter}, ::Type{<:Dagger.Chunk}, value) = false
+
+function Base.getproperty(plan::RecoPlan{DistributedReconstructionParameter}, name::Symbol)
+  if name == :worker
+    return getfield(plan, :values)[name][]
+  elseif name == :algo
+    chunk = getfield(plan, :values)[name][]
+    return ismissing(chunk) ? chunk : DistributedRecoPlan(chunk)
+  else
+    error("type $(DistributedReconstructionParameter) has no field $name")
+  end
+end
