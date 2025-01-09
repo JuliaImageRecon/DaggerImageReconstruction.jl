@@ -30,6 +30,15 @@ function Base.setproperty!(plan::DistributedRecoPlan, name::Symbol, x)
   end)
   return nothing
 end
+function Base.setproperty!(f::Base.Callable, plan::DistributedRecoPlan, name)
+  fetch(Dagger.spawn(plan._chunk) do chunk
+    Base.setproperty!(chunk, name, f())
+    return true # See setproperty above
+  end)
+  return nothing
+end
+
+
 function AbstractImageReconstruction.showtree(io::IO, plan::DistributedRecoPlan{T}, indent::String = "", depth::Int = 1) where T
   io = IOContext(io, :limit => true, :compact => true)
 
