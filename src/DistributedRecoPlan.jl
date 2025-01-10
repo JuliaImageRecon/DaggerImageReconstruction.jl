@@ -30,7 +30,7 @@ function Base.setproperty!(plan::DistributedRecoPlan, name::Symbol, x)
   end)
   return nothing
 end
-function Base.setproperty!(f::Base.Callable, plan::DistributedRecoPlan, name)
+function Base.setproperty!(plan::DistributedRecoPlan, name::Symbol, f::Base.Callable)
   fetch(Dagger.spawn(plan._chunk) do chunk
     Base.setproperty!(chunk, name, f())
     return true # See setproperty above
