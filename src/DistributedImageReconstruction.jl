@@ -11,5 +11,6 @@ abstract type AbstractDistributedReconstructionAlgorithm{A} <: AbstractImageReco
 include("Utils.jl")
 include("DistributedRecoPlan.jl")
 include("DistributedReconstructionAlgorithm.jl")
+include("DistributedReconstructionProcess.jl")
 
 end
