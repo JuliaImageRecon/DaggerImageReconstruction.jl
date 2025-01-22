@@ -1,8 +1,9 @@
 export DistributedReconstructionParameter, DistributedReconstructionAlgorithm
-struct DistributedReconstructionParameter{T} <: AbstractImageReconstructionParameters
-  algo::Dagger.Chunk{T}
+struct DistributedReconstructionParameter{T, C <: Dagger.Chunk{T}} <: AbstractImageReconstructionParameters
+  algo::C
   worker::Int64
-  DistributedReconstructionParameter(algo::Dagger.Chunk{T}, worker::Int64) where T = new{T}(algo, worker)
+  DistributedReconstructionParameter(algo::C, worker::Int64) where {T <: AbstractImageReconstructionAlgorithm, C <: Dagger.Chunk{T}}= new{T, C}(algo, worker)
+  # TODO Arbitrary scope
   # Not entirely sure how to handle arbitrary scopes with RecoPlans atm
   # DistributedReconstructionParameter(algo::Dagger.Chunk{T}, scope::Dagger.AbstractScope) where T = new{T}(algo, scope)
 end
@@ -61,7 +62,7 @@ function AbstractImageReconstruction.build(plan::RecoPlan{DistributedReconstruct
       build(tmp)
     end)
   else
-    algo = Dagger.@mutable worker = worker build(worker)
+    error("Expected a Dagger.Chunk, found $(typeof(param))")
   end
   return DistributedReconstructionParameter(algo, worker)
 end
@@ -143,9 +144,7 @@ function Base.setproperty!(plan::RecoPlan{DistributedReconstructionParameter}, n
       setchunk!(plan, :algo, Dagger.@mutable worker = value collect(getchunk(plan, :algo)))
     end
     getfield(plan, :values)[name][] = value
-  end
-
-  if name == :algo
+  elseif name == :algo
     setchunk(plan, :algo, Dagger.@mutable worker = plan.worker value)
   end
 

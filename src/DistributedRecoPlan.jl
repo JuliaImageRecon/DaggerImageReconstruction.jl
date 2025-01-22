@@ -25,7 +25,7 @@ end
 function Base.setproperty!(plan::DistributedRecoPlan, name::Symbol, x)
   fetch(Dagger.spawn(plan._chunk) do chunk
     Base.setproperty!(chunk, name, x)
-    return true # Hacky workaround, we don't want to return any expensive
+    return true # Hacky workaround, we don't want to return anything expensive
     # But we still want to notice errors, so we fetch the result and let the happy-path return just true
   end)
   return nothing
