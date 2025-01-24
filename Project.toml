@@ -1,4 +1,4 @@
-name = "DistributedImageReconstruction"
+name = "DaggerImageReconstruction"
 uuid = "b99085f1-2f43-45a7-bd38-d511f4bff3b1"
 authors = ["nHackel <nHackel@users.noreply.github.com> and contributors"]
 version = "0.1.0"
@@ -12,7 +12,7 @@ Distributed = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 AbstractImageReconstruction = "0.4"
 Dagger = "0.18"
 Distributed = "1"
-julia = "1.9"
+julia = "1.10"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
