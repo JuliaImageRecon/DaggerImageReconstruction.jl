@@ -93,7 +93,7 @@ function AbstractImageReconstruction.loadPlan!(plan::RecoPlan{DaggerReconstructi
     param = AbstractImageReconstruction.loadPlan!(dict["param"], modDict)
     parent!(param, plan)
   end
-  setchunk(plan, :param, Dagger.@mutable worker = myid() param)
+  setchunk!(plan, :param, Dagger.@mutable worker = myid() param)
   plan.worker = myid()
   return plan
 end

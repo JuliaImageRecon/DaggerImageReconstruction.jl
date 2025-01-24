@@ -71,15 +71,19 @@ end
 AbstractImageReconstruction.toDictValue!(dict, plan::RecoPlan{DaggerReconstructionParameter}) = dict["algo"] = fetch(Dagger.@spawn toDict(getchunk(plan, :algo)))
 
 function AbstractImageReconstruction.showtree(io::IO, property::RecoPlan{DaggerReconstructionParameter}, indent::String, depth::Int)
-  print(io, indent, ELBOW, "algo", "::$((getfield(property, :values)[:algo][]).chunktype) [Distributed, Worker $(property.worker)]", "\n")
-  output = fetch(Dagger.spawn(getchunk(property, :algo)) do algo
-      buffer = IOBuffer()
-      showtree(buffer, algo, indent * INDENT, depth + 1)
-      seekstart(buffer)
-      return read(buffer)
-    end
-  )
-  write(io, output)
+  if !ismissing(property.algo)
+    print(io, indent, ELBOW, "algo", "::$((getfield(property, :values)[:algo][]).chunktype) [Distributed, Worker $(property.worker)]", "\n")
+    output = fetch(Dagger.spawn(getchunk(property, :algo)) do algo
+        buffer = IOBuffer()
+        showtree(buffer, algo, indent * INDENT, depth + 1)
+        seekstart(buffer)
+        return read(buffer)
+      end
+    )
+    write(io, output)
+  else
+    print(io, indent, ELBOW, "algo", "\n")
+  end
 end
 
 function AbstractImageReconstruction.clear!(plan::RecoPlan{DaggerReconstructionParameter}, preserve::Bool = true)
@@ -117,9 +121,15 @@ function AbstractImageReconstruction.setAll!(plan::RecoPlan{DaggerReconstruction
       Base.setproperty!(plan, name, x)
     catch ex
       @error ex
-      @warn "Could not set $name of $T with value of type $(typeof(x))"
+      @warn "Could not set $name of DaggerReconstructionParameter with value of type $(typeof(x))"
     end
   end
+end
+function AbstractImageReconstruction.setAll!(plan::RecoPlan{DaggerReconstructionParameter}, name::Symbol, f::Function)
+  # Execute function on remote and read it
+  wait(Dagger.spawn(getchunk(plan, :algo)) do algo
+    setAll!(algo, name, f())
+  end)
 end
 function Base.setproperty!(plan::RecoPlan{DaggerReconstructionParameter}, name::Symbol, x)
   if !haskey(getfield(plan, :values), name)
@@ -145,7 +155,7 @@ function Base.setproperty!(plan::RecoPlan{DaggerReconstructionParameter}, name::
     end
     getfield(plan, :values)[name][] = value
   elseif name == :algo
-    setchunk(plan, :algo, Dagger.@mutable worker = plan.worker value)
+    setchunk!(plan, :algo, Dagger.@mutable worker = plan.worker value)
   end
 
   return Base.getproperty(plan, name)
