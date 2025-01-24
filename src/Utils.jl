@@ -8,7 +8,7 @@ Load a `RecoPlan` from on a TOML according to `loadPlan(args...)` on the specifi
 """
 
 function loadDaggerPlan(args...; worker)
-  plan = Dagger.@mutable worker = worker load_plan(args...)
+  plan = Dagger.@mutable worker = worker loadPlan(args...)
   params = RecoPlan(DaggerReconstructionParameter; worker = worker, algo = plan)
   return RecoPlan(DaggerReconstructionAlgorithm; parameter = params)
 end
