@@ -108,11 +108,7 @@ end
 
 function AbstractImageReconstruction.setAll!(plan::RecoPlan{DaggerReconstructionParameter}, name::Symbol, x)
   if !ismissing(getchunk(plan, :algo))
-    wait(Dagger.spawn(getchunk(plan, :algo)) do algo
-      if algo isa RecoPlan
-        setAll!(algo, name, x)
-      end
-    end)
+    setAll!(plan.algo, name, x)
   end
 
   # Set the value of the field
@@ -124,12 +120,6 @@ function AbstractImageReconstruction.setAll!(plan::RecoPlan{DaggerReconstruction
       @warn "Could not set $name of DaggerReconstructionParameter with value of type $(typeof(x))"
     end
   end
-end
-function AbstractImageReconstruction.setAll!(plan::RecoPlan{DaggerReconstructionParameter}, name::Symbol, f::Function)
-  # Execute function on remote and read it
-  wait(Dagger.spawn(getchunk(plan, :algo)) do algo
-    setAll!(algo, name, f())
-  end)
 end
 function Base.setproperty!(plan::RecoPlan{DaggerReconstructionParameter}, name::Symbol, x)
   if !haskey(getfield(plan, :values), name)

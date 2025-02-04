@@ -30,7 +30,7 @@ function Base.setproperty!(plan::DaggerRecoPlan, name::Symbol, x)
   end)
   return nothing
 end
-function Base.setproperty!(plan::DaggerRecoPlan, name::Symbol, f::Base.Callable)
+function Base.setproperty!(f::Base.Callable, plan::DaggerRecoPlan, name::Symbol)
   fetch(Dagger.spawn(plan._chunk) do chunk
     Base.setproperty!(chunk, name, f())
     return true # See setproperty above
