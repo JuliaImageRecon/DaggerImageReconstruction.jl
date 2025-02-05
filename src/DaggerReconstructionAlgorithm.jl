@@ -62,7 +62,7 @@ function AbstractImageReconstruction.build(plan::RecoPlan{DaggerReconstructionPa
       build(tmp)
     end)
   else
-    error("Expected a Dagger.Chunk, found $(typeof(param))")
+    error("Expected a Dagger.Chunk, found $(typeof(algo))")
   end
   return DaggerReconstructionParameter(algo, worker)
 end
