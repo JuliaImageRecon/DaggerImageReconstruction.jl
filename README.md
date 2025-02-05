@@ -1,6 +1,6 @@
 # DaggerImageReconstruction
 
-[![Build Status](https://github.com/JuliaImageRecon/DistributedImageReconstruction.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/JuliaImageRecon/DaggerImageReconstruction.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Build Status](https://github.com/JuliaImageRecon/DaggerImageReconstruction.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/JuliaImageRecon/DaggerImageReconstruction.jl/actions/workflows/CI.yml?query=branch%3Amain)
 
 [![](https://img.shields.io/badge/docs-latest-blue.svg)](https://JuliaImageRecon.github.io/DaggerImageReconstruction.jl)
 
