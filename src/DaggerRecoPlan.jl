@@ -17,10 +17,16 @@ function Base.getproperty(plan::DaggerRecoPlan{T}, name::Symbol) where T
   end
 end
 
-function AbstractImageReconstruction.setAll!(plan::DaggerRecoPlan, name::Symbol, x)
-  wait(Dagger.spawn(plan._chunk) do chunk
-    setAll!(chunk, name, x)
+function AbstractImageReconstruction.setAll!(plan::DaggerRecoPlan, name::Symbol, x, set, found)
+  (remoteSet, remoteFound) = fetch(Dagger.spawn(plan._chunk) do chunk
+    remoteSet = Ref(false)
+    remoteFound = Ref(true)
+    setAll!(chunk, name, x, remoteSet, remoteFound)
+    return (remoteSet[], remoteFound[])
   end)
+  set[] |= remoteSet
+  found[] |= remoteFound
+  return nothing
 end
 function Base.setproperty!(plan::DaggerRecoPlan, name::Symbol, x)
   fetch(Dagger.spawn(plan._chunk) do chunk

@@ -106,15 +106,17 @@ function AbstractImageReconstruction.loadPlan!(plan::RecoPlan{DaggerReconstructi
   return plan
 end
 
-function AbstractImageReconstruction.setAll!(plan::RecoPlan{DaggerReconstructionParameter}, name::Symbol, x)
+function AbstractImageReconstruction.setAll!(plan::RecoPlan{DaggerReconstructionParameter}, name::Symbol, x, set, found)
   if !ismissing(getchunk(plan, :algo))
-    setAll!(plan.algo, name, x)
+    setAll!(plan.algo, name, x, set, found)
   end
 
   # Set the value of the field
   if hasproperty(plan, name)
     try
+      found[] |= true
       Base.setproperty!(plan, name, x)
+      set[] |= true
     catch ex
       @error ex
       @warn "Could not set $name of DaggerReconstructionParameter with value of type $(typeof(x))"
