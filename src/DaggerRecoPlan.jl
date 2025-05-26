@@ -1,3 +1,4 @@
+export DaggerRecoPlan
 struct DaggerRecoPlan{T, C <: Dagger.Chunk{RecoPlan{T}}} <: AbstractRecoPlan{T}
   _chunk::C
 end
@@ -16,6 +17,8 @@ function Base.getproperty(plan::DaggerRecoPlan{T}, name::Symbol) where T
     end
   end
 end
+
+getchunk(plan::DaggerRecoPlan) = plan._chunk
 
 function AbstractImageReconstruction.setAll!(plan::DaggerRecoPlan, name::Symbol, x, set, found)
   (remoteSet, remoteFound) = fetch(Dagger.spawn(plan._chunk) do chunk
@@ -63,4 +66,20 @@ function AbstractImageReconstruction.showtree(io::IO, plan::DaggerRecoPlan{T}, i
     end)
     write(io, tmp)
   end
+end
+
+AbstractTrees.ParentLinks(::Type{<:DaggerRecoPlan}) = AbstractTrees.StoredParents()
+function AbstractTrees.parent(plan::DaggerRecoPlan)
+  chunk = getfield(plan, :_chunk)
+  parent_chunk = Dagger.@mutable scope = chunk.scope fetch(Dagger.@spawn AbstractTrees.parent(chunk))
+  return DaggerRecoPlan(parent_chunk)
+end
+function AbstractTrees.children(plan::DaggerRecoPlan)
+  result = Vector{DaggerRecoPlan}()
+  for prop in propertynames(plan)
+    if getproperty(plan, prop) isa DaggerRecoPlan
+      push!(result, getproperty(plan, prop))
+    end
+  end
+  return result
 end
