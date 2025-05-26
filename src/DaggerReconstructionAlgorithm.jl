@@ -39,7 +39,7 @@ function AbstractImageReconstruction.process(algo::DaggerReconstructionAlgorithm
       reconstruct(algo, data)
     end
   )
-  put!(algo.output, result)
+  return result
 end
 
 getchunk(plan::RecoPlan{DaggerReconstructionParameter}, name::Symbol) = getfield(plan, :values)[name][]
