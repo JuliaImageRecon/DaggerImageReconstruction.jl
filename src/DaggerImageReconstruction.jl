@@ -4,6 +4,7 @@ using Distributed
 using Dagger
 using AbstractImageReconstruction
 using AbstractImageReconstruction.AbstractTrees
+using AbstractImageReconstruction.Observables
 
 import AbstractImageReconstruction: process, build, toDictValue!, showtree, showproperty, INDENT, PIPE, TEE, ELBOW
 
