@@ -46,6 +46,32 @@
     end
 
     @testset "Observables" begin
+      planD = toPlan(algoD)
+      rootD = planD.parameter.algo
+      observed = Ref{Bool}()
+      fun = (val) -> observed[] = true
+
+      obs_fun = on(fun, rootD.parameter.reco, :angles)
+      rootD.parameter.reco.angles = angles
+      @test observed[]
+      observed[] = false
+      try 
+        rootD.parameter.reco.angles = "Test"
+      catch e
+      end
+      @test !(observed[])
+  
+      off(rootD.parameter.reco, :angles, obs_fun)
+      rootD.parameter.reco.angles = angles
+      @test !(observed[])
+  
+      obsv = rootD.parameter.reco[:angles]
+      @test obsv isa Dagger.Chunk{<:Observable}
+  
+      on(fun, rootD.parameter.reco, :angles)
+      AbstractImageReconstruction.clear!(rootD.parameter.reco)
+      rootD.parameter.reco.angles = angles
+      @test !(observed[])  
     end
 
 
