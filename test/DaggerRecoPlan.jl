@@ -8,7 +8,7 @@
     parameter = DaggerReconstructionParameter(; algo = algo, worker = worker)
     algoD = DaggerReconstructionAlgorithm(parameter)
 
-
+    
     @testset "Property Interface" begin
       planD = toPlan(algoD)
 
@@ -48,7 +48,7 @@
     @testset "Observables" begin
       planD = toPlan(algoD)
       rootD = planD.parameter.algo
-      observed = Ref{Bool}()
+      observed = Ref{Bool}(false)
       fun = (val) -> observed[] = true
 
       obs_fun = on(fun, rootD.parameter.reco, :angles)

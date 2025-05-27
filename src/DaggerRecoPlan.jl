@@ -46,9 +46,9 @@ function Base.setproperty!(f::Base.Callable, plan::DaggerRecoPlan, name::Symbol)
   end)
   return nothing
 end
-function clear!(plan::DaggerRecoPlan, args...)
+function AbstractImageReconstruction.clear!(plan::DaggerRecoPlan, args...)
   wait(Dagger.spawn(getchunk(plan)) do chunk
-    clear!(chunk, args...)
+    AbstractImageReconstruction.clear!(chunk, args...)
   end)
   return plan
 end
@@ -95,9 +95,19 @@ function Base.getindex(plan::DaggerRecoPlan, name::Symbol)
   chunk = getchunk(plan)
   return Dagger.@mutable scope = chunk.scope fetch(Dagger.@spawn getindex(chunk, name))
 end
-function Observables.on(f, plan::DaggerRecoPlan, property::Symbol; kwargs...)
-  chunk = getchunk(plan)
-  return Dagger.@mutable scope = chunk.scope fetch(Dagger.@spawn on(f, chunk, property; kwargs...))
+function Observables.on(f, plan::DaggerRecoPlan, property::Symbol; processing = identity, kwargs...)
+  # We don't want to send f directly, this seems to copy certain values!
+  f_chunk = Dagger.@mutable worker = myid() f
+  # Don't return directly the obs_fn, because that containts all the data
+  return Dagger.@mutable scope = getchunk(plan).scope fetch(Dagger.spawn(getchunk(plan)) do chunk
+    # We want to execute f on our current worker, while triggering on changes on the (remote) worker
+    obs_fn = on(chunk, property) do newval
+      # If the value changes, we spawn a new worker with the value
+      processed = processing(newval)
+      wait(Dagger.@spawn f_chunk(processed)) # wait for f to finish s.t. it's all synchronous
+    end
+    return obs_fn
+  end)
 end
 function Observables.off(plan::DaggerRecoPlan, property::Symbol, f_chunk::Dagger.Chunk{<:ObserverFunction})
   wait(Dagger.spawn(getchunk(plan)) do chunk
