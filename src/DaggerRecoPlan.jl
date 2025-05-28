@@ -177,6 +177,15 @@ function Base.getindex(plan::DaggerRecoPlan, name::Symbol)
   chunk = getchunk(plan)
   return Dagger.@mutable scope = chunk.scope fetch(Dagger.@spawn getindex(chunk, name))
 end
+"""
+    on(f, plan::DaggerRecoPlan, property::Symbol; preprocessing = identity, kwargs...)
+  
+Registers a callback function `f` to be executed whenever the specified `property` of the given `plan` changes.
+The function `f` will be executed with the new value of the property on the current worker. Returns a Dagger.Chunk of the ObservableFunction.
+This chunk is required to unregister the listener `f`
+
+To preprocess the data before it is passed to `f`, use the `preprocessing` keyword argument.
+"""
 function Observables.on(f, plan::DaggerRecoPlan, property::Symbol; preprocessing = identity, kwargs...)
   # We don't want to send f directly, this seems to copy certain values!
   f_chunk = Dagger.@mutable worker = myid() f
@@ -185,12 +194,17 @@ function Observables.on(f, plan::DaggerRecoPlan, property::Symbol; preprocessing
     # We want to execute f on our current process, while triggering on changes on the (remote) process
     obs_fn = on(chunk, property) do newval
       # If the value changes, we spawn a new task with the value
-      processed = processing(newval)
+      processed = preprocessing(newval)
       wait(Dagger.@spawn f_chunk(processed)) # wait for f to finish s.t. it's all synchronous
     end
     return obs_fn
   end)
 end
+"""
+    off(plan::DaggerRecoPlan, property::Symbol, f_chunk::Dagger.Chunk{<:ObserverFunction})
+
+Unregisters a previously registered callback function from observing changes to the specified `property` of the given `plan`. This stops any further execution of  the callback when the property changes.
+"""
 function Observables.off(plan::DaggerRecoPlan, property::Symbol, f_chunk::Dagger.Chunk{<:ObserverFunction})
   wait(Dagger.spawn(getchunk(plan)) do chunk
     f = fetch(f_chunk)
