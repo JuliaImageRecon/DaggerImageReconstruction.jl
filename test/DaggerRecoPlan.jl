@@ -79,6 +79,11 @@
       planD = toPlan(algoD)
       rootD = planD.parameter.algo
       parameter = rootD.parameter
+
+      # Check that we have a "fully-connected" tree between local and remote
+      @test planD.parameter == AbstractTrees.parent(rootD)
+      @test parentproperties(parameter.pre) == [:parameter, :algo, :parameter, :pre]
+
       # Cant do direct equality, check objectid on remote
       getId(val) = fetch(Dagger.@spawn objectid(DaggerImageReconstruction.getchunk(val)))
       @test getId(parameter) == getId(first(AbstractTrees.children(rootD)))

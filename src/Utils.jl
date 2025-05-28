@@ -4,9 +4,8 @@ export loadDaggerPlan
 """
     loadDaggerPlan(filename; worker)
   
-Read a local `RecoPlan` from `args`  and interpret it on the the specified worker. The resulting `RecoPlan` is embedded within a `DaggerReconstructionAlgorithm`.
+Load a local `RecoPlan` from the specified `filename` and interpret it on the designated `worker`. The resulting `RecoPlan` is encapsulated within a `DaggerReconstructionAlgorithm`.
 """
-
 function loadDaggerPlan(filename, modules; worker)
   buffer = IOBuffer()
   open(filename) do file
