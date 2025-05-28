@@ -1,5 +1,5 @@
 using Documenter, Literate, AbstractImageReconstruction,Observables, Distributed
-using DaggerImageReconstruction
+using DaggerImageReconstruction, DaggerImageReconstruction.Dagger
 
 # Generate examples
 OUTPUT_BASE = joinpath(@__DIR__(), "src/generated")
