@@ -1,8 +1,11 @@
+worker = 1 # hide
 # # Distributed Image Reconstruction
 # This example demonstrates how to execute an iterative Radon reconstruction using the OurRadonReco package on a separate process.
 # We start by adding a new worker process:
-using Distributed
-worker = first(addprocs(1))
+# ```julia
+# using Distributed
+# worker = first(addprocs(1))
+# ```
 # In this example we create a new local process, but usually one would create a process on another machine for example via ssh.
 
 # We retrieve the worker's ID, which will be used to designate the target for our algorithm.
