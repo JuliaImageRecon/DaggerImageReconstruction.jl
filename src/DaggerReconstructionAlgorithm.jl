@@ -1,4 +1,5 @@
 export DaggerReconstructionParameter, DaggerReconstructionAlgorithm
+
 """
     DaggerReconstructionParameter
 
@@ -9,6 +10,7 @@ struct DaggerReconstructionParameter{T, C <: Dagger.Chunk{T}} <: AbstractImageRe
   worker::Int64
   DaggerReconstructionParameter(algo::C, worker::Int64) where {T <: AbstractImageReconstructionAlgorithm, C <: Dagger.Chunk{T}}= new{T, C}(algo, worker)
 end
+
 """
     DaggerReconstructionParameter(; algo, worker = myid())
 

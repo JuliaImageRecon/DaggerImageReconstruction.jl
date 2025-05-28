@@ -1,7 +1,4 @@
 using Documenter, Literate, AbstractImageReconstruction,Observables, Distributed
-if length(workers()) < 2
-    addprocs(1)
-end
 using DaggerImageReconstruction
 
 # Generate examples

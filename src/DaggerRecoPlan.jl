@@ -1,4 +1,5 @@
 export DaggerRecoPlan
+
 """
     DaggerRecoPlan{T}
 
@@ -12,6 +13,7 @@ struct DaggerRecoPlan{T, C <: Dagger.Chunk{RecoPlan{T}}} <: AbstractRecoPlan{T}
 end
 
 Base.propertynames(plan::DaggerRecoPlan) = fetch(Dagger.@spawn propertynames(getchunk(plan)))
+
 """
     Base.getproperty(plan::DaggerRecoPlan, name::Symbol)
   
@@ -50,6 +52,7 @@ function AbstractImageReconstruction.setAll!(plan::DaggerRecoPlan, name::Symbol,
   found[] |= remoteFound
   return nothing
 end
+
 """
     Base.setproperty!(plan::DaggerRecoPlan, name::Symbol, x)
 
@@ -63,6 +66,7 @@ function Base.setproperty!(plan::DaggerRecoPlan, name::Symbol, x)
   end)
   return nothing
 end
+
 """
     Base.setproperty!(plan::DaggerRecoPlan, name::Symbol, x)
 
@@ -105,6 +109,7 @@ function AbstractImageReconstruction.showtree(io::IO, plan::DaggerRecoPlan{T}, i
 end
 
 AbstractTrees.ParentLinks(::Type{<:DaggerRecoPlan}) = AbstractTrees.StoredParents()
+
 """
     parent(plan::DaggerRecoPlan)
 
@@ -122,6 +127,7 @@ function AbstractTrees.parent(plan::DaggerRecoPlan)
   end
   return DaggerRecoPlan(parent_chunk)
 end
+
 """
     children(plan::DaggerRecoPlan)
 
@@ -177,6 +183,7 @@ function Base.getindex(plan::DaggerRecoPlan, name::Symbol)
   chunk = getchunk(plan)
   return Dagger.@mutable scope = chunk.scope fetch(Dagger.@spawn getindex(chunk, name))
 end
+
 """
     on(f, plan::DaggerRecoPlan, property::Symbol; preprocessing = identity, kwargs...)
   
@@ -200,6 +207,7 @@ function Observables.on(f, plan::DaggerRecoPlan, property::Symbol; preprocessing
     return obs_fn
   end)
 end
+
 """
     off(plan::DaggerRecoPlan, property::Symbol, f_chunk::Dagger.Chunk{<:ObserverFunction})
 
