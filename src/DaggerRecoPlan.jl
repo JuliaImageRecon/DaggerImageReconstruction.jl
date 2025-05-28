@@ -177,7 +177,7 @@ function Base.getindex(plan::DaggerRecoPlan, name::Symbol)
   chunk = getchunk(plan)
   return Dagger.@mutable scope = chunk.scope fetch(Dagger.@spawn getindex(chunk, name))
 end
-function Observables.on(f, plan::DaggerRecoPlan, property::Symbol; processing = identity, kwargs...)
+function Observables.on(f, plan::DaggerRecoPlan, property::Symbol; preprocessing = identity, kwargs...)
   # We don't want to send f directly, this seems to copy certain values!
   f_chunk = Dagger.@mutable worker = myid() f
   # Don't return directly the obs_fn, because that containts all the data
