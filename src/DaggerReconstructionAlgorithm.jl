@@ -1,22 +1,30 @@
 export DaggerReconstructionParameter, DaggerReconstructionAlgorithm
+"""
+    DaggerReconstructionParameter
+
+Struct representing parameters for a Dagger-based reconstruction algorithm.
+"""
 struct DaggerReconstructionParameter{T, C <: Dagger.Chunk{T}} <: AbstractImageReconstructionParameters
   algo::C
   worker::Int64
   DaggerReconstructionParameter(algo::C, worker::Int64) where {T <: AbstractImageReconstructionAlgorithm, C <: Dagger.Chunk{T}}= new{T, C}(algo, worker)
-  # TODO Arbitrary scope
-  # Not entirely sure how to handle arbitrary scopes with RecoPlans atm
-  # DaggerReconstructionParameter(algo::Dagger.Chunk{T}, scope::Dagger.AbstractScope) where T = new{T}(algo, scope)
 end
+"""
+    DaggerReconstructionParameter(; algo, worker = myid())
+
+Constructs a DaggerReconstructionParameter on the specified worker. The given algorithm is moved to the worker. To avoid movement of large data, one can load a RecoPlan on the worker and configure it locally.
+"""
 DaggerReconstructionParameter(; algo, worker = myid()) = DaggerReconstructionParameter(algo, worker)
 function DaggerReconstructionParameter(algo, worker::Int64)
   chunk = Dagger.@mutable worker = worker algo
   return DaggerReconstructionParameter(chunk, worker)
 end
-#function DaggerReconstructionParameter(algo, scope)
-#  chunk = Dagger.@mutable scope = scope algo
-#  return DaggerReconstructionParameter(chunk, scope)
-#end
 
+"""
+    DaggerReconstructionAlgorithm
+
+Struct representing a Dagger-based reconstruction algorithm, which encapsulates the distrubted reconstruction execution and manages the outputs.
+"""
 mutable struct DaggerReconstructionAlgorithm{T} <: AbstractDaggerReconstructionAlgorithm{T}
   parameter::DaggerReconstructionParameter{T}
   output::Channel{Any}
@@ -49,8 +57,11 @@ end
 function AbstractImageReconstruction.toPlan(param::DaggerReconstructionParameter)
   plan = RecoPlan(DaggerReconstructionParameter)
   plan.worker = param.worker
+  local_plan = DaggerRecoPlan(Dagger.@mutable worker = myid() plan)
   setchunk!(plan, :algo, Dagger.@mutable worker = param.worker fetch(Dagger.spawn(param.algo) do algo 
-      toPlan(algo)
+      remote_plan = toPlan(algo)
+      parent!(remote_plan, local_plan)
+      return remote_plan
     end))
   return plan
 end
@@ -136,8 +147,9 @@ function Base.setproperty!(plan::RecoPlan{DaggerReconstructionParameter}, name::
     value = convert(t, x)
   end
 
-  if value isa RecoPlan
-    parent!(value, plan)
+  if value isa AbstractRecoPlan
+    local_plan = DaggerRecoPlan(Dagger.@mutable worker = myid() plan)
+    parent!(value, local_plan)
   end
 
   # When we change the worker, we move the chunk around

@@ -78,6 +78,12 @@ AbstractTrees.ParentLinks(::Type{<:DaggerRecoPlan}) = AbstractTrees.StoredParent
 function AbstractTrees.parent(plan::DaggerRecoPlan)
   chunk = getchunk(plan)
   parent_chunk = Dagger.@mutable scope = chunk.scope fetch(Dagger.@spawn AbstractTrees.parent(chunk))
+  if chunktype(parent_chunk) == Nothing
+    return nothing
+  elseif chunktype(parent_chunk) <: DaggerRecoPlan
+    daggerplan = fetch(parent_chunk)
+    return fetch(getchunk(daggerplan))
+  end
   return DaggerRecoPlan(parent_chunk)
 end
 function AbstractTrees.children(plan::DaggerRecoPlan)
@@ -88,6 +94,41 @@ function AbstractTrees.children(plan::DaggerRecoPlan)
     end
   end
   return result
+end
+function AbstractImageReconstruction.parentproperty(plan::DaggerRecoPlan)
+  p = AbstractTrees.parent(plan)
+  if !isnothing(p)
+    return findparentproperty(plan, p)
+  end
+  return nothing
+end
+function findparentproperty(plan::DaggerRecoPlan, parentD::DaggerRecoPlan)
+  # TODO handle different scopes, perhaps via objectid?
+  # Check on parents-scope to avoid data transfer for non Recoplan properties
+  return fetch(Dagger.spawn(getchunk(parentD)) do parent
+    child = fetch(getchunk(plan))
+    for property in propertynames(parent)
+      if getproperty(parent, property) === child
+        return property
+      end
+    end
+    return nothing
+  end)
+end
+function findparentproperty(planD::DaggerRecoPlan, parent::RecoPlan)
+  # TODO handle different scopes, perhaps via objectid?
+  for property in propertynames(parent)
+    childD = getproperty(parent, property)
+    if childD isa DaggerRecoPlan
+      match = fetch(Dagger.spawn(getchunk(planD)) do plan
+        child = fetch(getchunk(childD))
+        return child === plan
+      end)
+      if match
+        return property
+      end
+    end
+  end
 end
 
 # Observables have the value as internal state -> don't want to transfer those
@@ -100,9 +141,9 @@ function Observables.on(f, plan::DaggerRecoPlan, property::Symbol; processing = 
   f_chunk = Dagger.@mutable worker = myid() f
   # Don't return directly the obs_fn, because that containts all the data
   return Dagger.@mutable scope = getchunk(plan).scope fetch(Dagger.spawn(getchunk(plan)) do chunk
-    # We want to execute f on our current worker, while triggering on changes on the (remote) worker
+    # We want to execute f on our current process, while triggering on changes on the (remote) process
     obs_fn = on(chunk, property) do newval
-      # If the value changes, we spawn a new worker with the value
+      # If the value changes, we spawn a new task with the value
       processed = processing(newval)
       wait(Dagger.@spawn f_chunk(processed)) # wait for f to finish s.t. it's all synchronous
     end
