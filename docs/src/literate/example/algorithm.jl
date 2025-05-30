@@ -1,4 +1,5 @@
 worker = 1 # hide
+using DaggerImageReconstruction # hide
 # # Distributed Image Reconstruction
 # This example demonstrates how to execute an iterative Radon reconstruction using the OurRadonReco package on a separate process.
 # We start by adding a new worker process:

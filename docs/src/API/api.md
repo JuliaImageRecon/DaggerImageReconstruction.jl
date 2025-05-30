@@ -14,6 +14,5 @@ DaggerImageReconstruction.DaggerRecoPlan
 Base.getproperty(::DaggerRecoPlan, ::Symbol)
 Base.setproperty!(::DaggerRecoPlan, ::Symbol, ::Any)
 Observables.on(::Any, ::DaggerRecoPlan, ::Symbol)
-Observables.off(::DaggerRecoPlan, ::Symbol, ::Dagger.Chunk)
 DaggerImageReconstruction.loadDaggerPlan
 ```

@@ -1,6 +1,7 @@
 worker = 1 # hide
 #using Distributed #hide
 #worker = first(addprocs(1)) #hide
+using DaggerImageReconstruction # hide
 include("../../literate/example/example_include_all.jl") #hide
 
 # # Distributed Image Reconstruction using RecoPlans
