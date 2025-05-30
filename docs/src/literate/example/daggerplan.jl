@@ -31,7 +31,7 @@ dict = Dict{Symbol, Any}()
 dict[:shape] = size(images)[1:3]
 dict[:angles] = angles
 dict[:iterations] = 20
-dict[:reg] = [L2Regularization(0.001), PositiveRegularization()]
+dict[:reg] = [L2Regularization(0.001)]
 dict[:solver] = CGNR
 setAll!(plan_dagger, dict)
 
@@ -39,9 +39,11 @@ setAll!(plan_dagger, dict)
 setproperty!(plan_dagger.parameter.algo.parameter.reco, :angles) do
   angles[1:2:end]
 end
+length(plan_dagger.parameter.algo.parameter.reco.angles) == length(1:2:length(angles))
 # The provided function is evaluated solely on the remote worker.
 
 # Once the algorithm is fully configured, we can build and use it as usual:
+setAll!(plan_dagger, dict)
 imag_dagger = reconstruct(build(plan_dagger), sinograms)
 fig = Figure()
 for i = 1:3
@@ -70,19 +72,20 @@ toTOML(stdout, plan_dagger)
 # Additionally, listeners can be attached across workers using the Observable interface on a `DaggerRecoPlan`:
 using Observables
 localVariable = 3
-fun = on(plan_iter.parameter.pre, :frames) do newval
+plan_iter_remote = plan_dagger.parameter.algo
+fun = on(plan_iter_remote.parameter.pre, :frames) do newval
   @info "Number of frames was updated to: $(length(newval))"
   localVariable = length(newval)
 end
-setAll!(plan_iter, :frames, collect(1:42))
+setAll!(plan_iter_remote, :frames, collect(1:42))
 
 # Note: We retain the observable function in the variable `fun` to allow for later removal of the listener. The anonymous function cannot be used directly due to internal listener management in **DaggerImageReconstruction**.
-off(plan_iter.parameter.pre, :frames, fun)
-setAll!(plan_iter, :frames, collect(1:32))
+off(plan_iter_remote.parameter.pre, :frames, fun)
+setAll!(plan_iter_remote, :frames, collect(1:32))
 
 # Since the listener executes on the local worker, updated data must be transferred between workers. If this involves large data, a preprocessing function can be provided to the Observable:
-fun = on(plan_iter.parameter.pre, :frames; preprocessing = length) do newval
+fun = on(plan_iter_remote.parameter.pre, :frames; preprocessing = length) do newval
   @info "Number of frames was updated to: $(newval)"
   localVariable = newval
 end
-setAll!(plan_iter, :frames, collect(1:42))
+setAll!(plan_iter_remote, :frames, collect(1:42))
