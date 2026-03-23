@@ -31,6 +31,7 @@ makedocs(
             "Introduction" => "example_intro.md",
             "Algoritm Interface" => "generated/example/algorithm.md",
             "RecoPlan Interface" => "generated/example/daggerplan.md",
+            "Parameter Interface" => "generated/example/utility.md"
         ],
         "API Reference" => "API/api.md",
 

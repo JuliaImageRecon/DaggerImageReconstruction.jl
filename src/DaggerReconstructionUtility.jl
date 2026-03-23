@@ -63,6 +63,22 @@ AbstractImageReconstruction.validvalue(plan::RecoPlan{DaggerReconstructionUtilit
 AbstractImageReconstruction.validvalue(plan::RecoPlan{DaggerReconstructionUtility}, ::Type{<:Dagger.Chunk}, value::Missing) = true
 AbstractImageReconstruction.validvalue(plan::RecoPlan{DaggerReconstructionUtility}, ::Type{<:Dagger.Chunk}, value) = false
 
+# TODO: requires support of nested utility in AbstractImageReconstruction
+function AbstractImageReconstruction.validvalue(plan, union::Type{Union{T, DaggerReconstructionUtility{<:T}}}, value::RecoPlan{DaggerReconstructionUtility}) where T
+  innertype = value.param isa DaggerRecoPlan ? typeof(value.param).parameters[1] : typeof(value.param)
+  return DaggerReconstructionUtility{<:innertype} <: union 
+end
+
+function AbstractImageReconstruction.validvalue(plan, union::UnionAll, value::RecoPlan{DaggerReconstructionUtility})
+  innertype = value.param isa DaggerRecoPlan ? typeof(value.param).parameters[1] : typeof(value.param)
+  return DaggerReconstructionUtility{<:innertype} <: union 
+end
+
+function AbstractImageReconstruction.validvalue(plan, union::UnionAll, value::RecoPlan{<:DaggerReconstructionUtility})
+  innertype = value.param isa DaggerRecoPlan ? typeof(value.param).parameters[1] : typeof(value.param)
+  return DaggerReconstructionUtility{<:innertype} <: union 
+end
+
 function Base.getproperty(plan::RecoPlan{<:DaggerReconstructionUtility}, name::Symbol)
   if name == :param
     chunk = getfield(plan, :values)[name][]
