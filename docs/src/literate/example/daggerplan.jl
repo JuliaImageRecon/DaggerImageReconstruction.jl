@@ -56,7 +56,7 @@ fig
 
 # ## Serialization
 # The serialization process of `DaggerReconstructionAlgorithm` and `DaggerReconstructionParameter` ignores the worker parameter and retrieves the entire plan tree:
-toTOML(stdout, plan_dagger)
+savePlan(stdout, plan_dagger)
 
 # It is also possible to directly load and distribute a serialized plan from a file using:
 # ```julia
