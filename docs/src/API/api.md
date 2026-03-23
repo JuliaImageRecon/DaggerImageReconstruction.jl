@@ -6,6 +6,7 @@ REPL one can access this documentation by entering the help mode with `?`
 ```@docs
 DaggerImageReconstruction.DaggerReconstructionAlgorithm
 DaggerImageReconstruction.DaggerReconstructionParameter
+DaggerImageReconstruction.DaggerReconstructionUtility
 ```
 
 ## DaggerRecoPlan

@@ -1,4 +1,18 @@
 export DaggerReconstructionUtility
+
+"""
+    DaggerReconstructionUtility(; param, worker)
+
+Wraps reconstruction parameters for distributed execution using Dagger.
+
+`DaggerReconstructionUtility` takes parameters (or parameters wrapped in 
+`AbstractUtilityReconstructionParameters`) and executes them on a specified 
+worker process via `Dagger.spawn`. This is useful when parameters need to 
+execute on a specific worker for resource access (e.g., GPU) without the 
+overhead of distributing entire algorithms.
+
+See also: [`DaggerReconstructionAlgorithm`](@ref)
+"""
 @parameter struct DaggerReconstructionUtility{P, T <: Union{P, AbstractUtilityReconstructionParameters{P}}, C <: Dagger.Chunk{T}} <: AbstractUtilityReconstructionParameters{P}
   param::C
   worker::Int64 = myid()
