@@ -4,7 +4,9 @@
 
 [![](https://img.shields.io/badge/docs-latest-blue.svg)](https://JuliaImageRecon.github.io/DaggerImageReconstruction.jl)
 
-This package allows algorithms developed with [AbstractImageReconstruction.jl](https://github.com/JuliaImageRecon/AbstractImageReconstruction.jl) to be exeucted partially or fully in different (and potentially distributed) Julia processes using [Dagger.jl](https://github.com/JuliaParallel/Dagger.jl/)
+[![codecov.io](http://codecov.io/github/JuliaImageRecon/AbstractImageReconstruction.jl/coverage.svg?branch=main)](http://codecov.io/github/JuliaImageRecon/DaggerImageReconstruction.jl?branch=main)
+
+This package allows algorithms developed with [AbstractImageReconstruction.jl](https://github.com/JuliaImageRecon/AbstractImageReconstruction.jl) to be executed partially or fully in different (and potentially distributed) Julia processes using [Dagger.jl](https://github.com/JuliaParallel/Dagger.jl/)
 
 # DaggerImageReconstruction.jl
 
