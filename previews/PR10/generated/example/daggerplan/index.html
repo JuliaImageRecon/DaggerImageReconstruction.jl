@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>RecoPlan Interface · DaggerImageReconstruction.jl</title><meta name="title" content="RecoPlan Interface · DaggerImageReconstruction.jl"/><meta property="og:title" content="RecoPlan Interface · DaggerImageReconstruction.jl"/><meta property="twitter:title" content="RecoPlan Interface · DaggerImageReconstruction.jl"/><meta name="description" content="Documentation for DaggerImageReconstruction.jl."/><meta property="og:description" content="Documentation for DaggerImageReconstruction.jl."/><meta property="twitter:description" content="Documentation for DaggerImageReconstruction.jl."/><meta property="og:url" content="https://github.com/JuliaImageRecon/DaggerImageReconstruction.jl/generated/example/daggerplan/"/><meta property="twitter:url" content="https://github.com/JuliaImageRecon/DaggerImageReconstruction.jl/generated/example/daggerplan/"/><link rel="canonical" href="https://github.com/JuliaImageRecon/DaggerImageReconstruction.jl/generated/example/daggerplan/"/><script data-outdated-warner src="../../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../search_index.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../../">DaggerImageReconstruction.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../../">Home</a></li><li><input class="collapse-toggle" id="menuitem-2" type="checkbox" checked/><label class="tocitem" for="menuitem-2"><span class="docs-label">Example: Distributed Radon Reconstruction Package</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../../example_intro/">Introduction</a></li><li><a class="tocitem" href="../algorithm/">Algoritm Interface</a></li><li class="is-active"><a class="tocitem" href>RecoPlan Interface</a><ul class="internal"><li><a class="tocitem" href="#Serialization"><span>Serialization</span></a></li><li><a class="tocitem" href="#Observables"><span>Observables</span></a></li></ul></li><li><a class="tocitem" href="../utility/">Parameter Interface</a></li></ul></li><li><a class="tocitem" href="../../../API/api/">API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Example: Distributed Radon Reconstruction Package</a></li><li class="is-active"><a href>RecoPlan Interface</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>RecoPlan Interface</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaImageRecon/DaggerImageReconstruction.jl/blob/main/docs/src/literate/example/daggerplan.jl#" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Distributed-Image-Reconstruction-using-RecoPlans"><a class="docs-heading-anchor" href="#Distributed-Image-Reconstruction-using-RecoPlans">Distributed Image Reconstruction using RecoPlans</a><a id="Distributed-Image-Reconstruction-using-RecoPlans-1"></a><a class="docs-heading-anchor-permalink" href="#Distributed-Image-Reconstruction-using-RecoPlans" title="Permalink"></a></h1><p>This example demonstrates how to configure an iterative reconstruction algorithm directly on a worker, which helps to avoid transferring large parameters between processes and allows access to resources that may only exist on a specific worker.</p><p>We follow a similar procedure as with the algorithm interface, but we will not configure the parameters just yet.</p><pre><code class="language-julia hljs">pre = RecoPlan(RadonPreprocessingParameters)
+iter_reco = RecoPlan(IterativeRadonReconstructionParameters)
+params = RecoPlan(IterativeRadonParameters; pre = pre, reco = iter_reco)
+plan_iter = RecoPlan(IterativeRadonAlgorithm, parameter = params)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">RecoPlan{Main.OurRadonReco.IterativeRadonAlgorithm}
+└─ parameter::RecoPlan{Main.OurRadonReco.IterativeRadonParameters}
+   ├─ reco::RecoPlan{Main.OurRadonReco.IterativeRadonReconstructionParameters}
+   │  ├─ iterations
+   │  ├─ solver
+   │  ├─ reg
+   │  ├─ eltype
+   │  ├─ angles
+   │  └─ shape
+   └─ pre::RecoPlan{Main.OurRadonReco.RadonPreprocessingParameters}
+      ├─ numAverages
+      └─ frames
+</code></pre><p>We can traverse the parameters of our algorithm and configure them locally:</p><pre><code class="language-julia hljs">plan_iter.parameter.pre.frames = collect(1:3)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3-element Vector{Int64}:
+ 1
+ 2
+ 3</code></pre><p>To transfer the plan to the worker process, we will use <code>DaggerReconstructionParameter</code> and <code>DaggerReconstructionAlgorithm</code> as a <code>RecoPlan</code>:</p><pre><code class="language-julia hljs">params_dagger = RecoPlan(DaggerReconstructionParameter; worker = worker, algo = plan_iter)
+plan_dagger = RecoPlan(DaggerReconstructionAlgorithm; parameter = params_dagger)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">RecoPlan{DaggerReconstructionAlgorithm}
+└─ parameter::RecoPlan{DaggerReconstructionParameter}
+   └─ algo::RecoPlan{Main.OurRadonReco.IterativeRadonAlgorithm} [Distributed, Worker 1]
+      └─ parameter::RecoPlan{Main.OurRadonReco.IterativeRadonParameters}
+         ├─ reco::RecoPlan{Main.OurRadonReco.IterativeRadonReconstructionParameters}
+         │  ├─ iterations
+         │  ├─ solver
+         │  ├─ reg
+         │  ├─ eltype
+         │  ├─ angles
+         │  └─ shape
+         └─ pre::RecoPlan{Main.OurRadonReco.RadonPreprocessingParameters}
+            ├─ numAverages
+            └─ frames = [1, 2, 3]
+</code></pre><p>In this setup, only the <code>DaggerReconstructionParameter</code> and <code>DaggerReconstructionAlgorithm</code> exist on the local worker; all other <code>RecoPlans</code> reside on the chosen worker. When traversing the <code>RecoPlan</code> tree across workers, we receive a <code>DaggerRecoPlan</code> instead of the usual data type:</p><pre><code class="language-julia hljs">typeof(plan_dagger.parameter.algo)
+
+#This ephemeral structure manages communication with its remote `RecoPlan` counterpart, allowing us to use the same interface as if the entire plan were local.
+plan_dagger.parameter.algo.parameter.reco.solver = CGNR
+
+dict = Dict{Symbol, Any}()
+dict[:shape] = size(images)[1:3]
+dict[:angles] = angles
+dict[:iterations] = 20
+dict[:reg] = [L2Regularization(0.001)]
+dict[:solver] = CGNR
+setAll!(plan_dagger, dict)</code></pre><p>To configure the algorithm with resources only available on the worker, such as files or GPU data, we can use the following interface:</p><pre><code class="language-julia hljs">setproperty!(plan_dagger.parameter.algo.parameter.reco, :angles) do
+  angles[1:2:end]
+end
+length(plan_dagger.parameter.algo.parameter.reco.angles) == length(1:2:length(angles))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">true</code></pre><p>The provided function is evaluated solely on the remote worker.</p><p>Once the algorithm is fully configured, we can build and use it as usual:</p><pre><code class="language-julia hljs">setAll!(plan_dagger, dict)
+imag_dagger = reconstruct(build(plan_dagger), sinograms)
+fig = Figure()
+for i = 1:3
+  plot_image(fig[i,1], reverse(images[:, :, 24, i]))
+  plot_image(fig[i,2], sinograms[:, :, 24, i])
+  plot_image(fig[i,3], reverse(imag_dagger[:, :, 24, i]))
+end
+resize_to_layout!(fig)
+fig</code></pre><img src="a2eb664d.png" alt="Example block output"/><h2 id="Serialization"><a class="docs-heading-anchor" href="#Serialization">Serialization</a><a id="Serialization-1"></a><a class="docs-heading-anchor-permalink" href="#Serialization" title="Permalink"></a></h2><p>The serialization process of <code>DaggerReconstructionAlgorithm</code> and <code>DaggerReconstructionParameter</code> ignores the worker parameter and retrieves the entire plan tree:</p><pre><code class="language-julia hljs">setAll!(plan_dagger, :reg, missing)
+setAll!(plan_dagger, :angles, missing)
+savePlan(stdout, plan_dagger)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">_module = &quot;DaggerImageReconstruction&quot;
+_type = &quot;RecoPlan{DaggerReconstructionAlgorithm}&quot;
+
+[parameter]
+_module = &quot;DaggerImageReconstruction&quot;
+_type = &quot;RecoPlan{DaggerReconstructionParameter}&quot;
+
+    [parameter.algo]
+    _module = &quot;Main.OurRadonReco&quot;
+    _type = &quot;RecoPlan{IterativeRadonAlgorithm}&quot;
+
+        [parameter.algo.parameter]
+        _module = &quot;Main.OurRadonReco&quot;
+        _type = &quot;RecoPlan{IterativeRadonParameters}&quot;
+
+            [parameter.algo.parameter.reco]
+            iterations = 20
+            shape = [64, 64, 64]
+            _module = &quot;Main.OurRadonReco&quot;
+            _type = &quot;RecoPlan{IterativeRadonReconstructionParameters}&quot;
+
+                [parameter.algo.parameter.reco.solver]
+                _module = &quot;RegularizedLeastSquares&quot;
+                _type = &quot;Type&quot;
+                _value = &quot;CGNR&quot;
+
+            [parameter.algo.parameter.pre]
+            frames = [1, 2, 3]
+            _module = &quot;Main.OurRadonReco&quot;
+            _type = &quot;RecoPlan{RadonPreprocessingParameters}&quot;</code></pre><p>It is also possible to directly load and distribute a serialized plan from a file using <code>loadDaggerPlan</code>:</p><pre><code class="language-julia hljs">clear!(plan_iter)
+io = IOBuffer()
+savePlan(io, plan_iter)
+seekstart(io)
+loadDaggerPlan(io, [OurRadonReco]; worker = worker)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">RecoPlan{DaggerReconstructionAlgorithm}
+└─ parameter::RecoPlan{DaggerReconstructionParameter}
+   └─ algo::RecoPlan{Main.OurRadonReco.IterativeRadonAlgorithm} [Distributed, Worker 1]
+      └─ parameter::RecoPlan{Main.OurRadonReco.IterativeRadonParameters}
+         ├─ reco::RecoPlan{Main.OurRadonReco.IterativeRadonReconstructionParameters}
+         │  ├─ iterations
+         │  ├─ solver
+         │  ├─ reg
+         │  ├─ eltype
+         │  ├─ angles
+         │  └─ shape
+         └─ pre::RecoPlan{Main.OurRadonReco.RadonPreprocessingParameters}
+            ├─ numAverages
+            └─ frames
+</code></pre><p>This automatically wraps everything in a <code>DaggerReconstructionAlgorithm</code>.</p><h2 id="Observables"><a class="docs-heading-anchor" href="#Observables">Observables</a><a id="Observables-1"></a><a class="docs-heading-anchor-permalink" href="#Observables" title="Permalink"></a></h2><p><code>RecoPlans</code> can attach callbacks to property value changes using Observables from <a href="https://github.com/JuliaGizmos/Observables.jl">Observables.jl</a>. If a <code>RecoPlan</code> is set up with listeners and then moved to a different worker, the plans execute within that worker. This functionality also applies to the <code>loadDaggerPlan</code> method mentioned earlier.</p><p>Additionally, listeners can be attached across workers using the Observable interface on a <code>DaggerRecoPlan</code>:</p><pre><code class="language-julia hljs">using AbstractImageReconstruction.Observables
+localVariable = 3
+plan_iter_remote = plan_dagger.parameter.algo
+fun = on(plan_iter_remote.parameter.pre, :frames) do newval
+  @info &quot;Number of frames was updated to: $(length(newval))&quot;
+  localVariable = length(newval)
+end
+setAll!(plan_iter_remote, :frames, collect(1:42))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">[ Info: Number of frames was updated to: 42</code></pre><p>Note: We retain the observable function in the variable <code>fun</code> to allow for later removal of the listener. The anonymous function cannot be used directly due to internal listener management in <strong>DaggerImageReconstruction</strong>.</p><pre><code class="language-julia hljs">off(plan_iter_remote.parameter.pre, :frames, fun)
+setAll!(plan_iter_remote, :frames, collect(1:32))</code></pre><p>Since the listener executes on the local worker, updated data must be transferred between workers. If this involves large data, a preprocessing function can be provided to the Observable:</p><pre><code class="language-julia hljs">fun = on(plan_iter_remote.parameter.pre, :frames; preprocessing = length) do newval
+  @info &quot;Number of frames was updated to: $(newval)&quot;
+  localVariable = newval
+end
+setAll!(plan_iter_remote, :frames, collect(1:42))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">[ Info: Number of frames was updated to: 42</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../algorithm/">« Algoritm Interface</a><a class="docs-footer-nextpage" href="../utility/">Parameter Interface »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Tuesday 24 March 2026 11:22">Tuesday 24 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
