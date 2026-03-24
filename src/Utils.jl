@@ -2,11 +2,12 @@ chunktype(::Dagger.Chunk{T}) where T = T
 
 export loadDaggerPlan
 """
-    loadDaggerPlan(filename; worker)
+    loadDaggerPlan(filename, modules; worker)
+    loadDaggerPlan(io, modules; worker)
   
 Load a local `RecoPlan` from the specified `filename` and interpret it on the designated `worker`. The resulting `RecoPlan` is encapsulated within a `DaggerReconstructionAlgorithm`.
 """
-function loadDaggerPlan(filename, modules; worker)
+function loadDaggerPlan(filename::String, modules; worker)
   buffer = IOBuffer()
   open(filename) do file
     for line in readlines(file; keep = true)
@@ -14,7 +15,10 @@ function loadDaggerPlan(filename, modules; worker)
     end
   end
   seekstart(buffer)
-  plan = Dagger.@mutable worker = worker loadPlan(buffer, modules)
+  return loadDaggerPlan(buffer, modules; worker)
+end
+function loadDaggerPlan(io, modules; worker)
+  plan = Dagger.@mutable worker = worker loadPlan(io, modules)
   params = RecoPlan(DaggerReconstructionParameter; worker = worker, algo = plan)
   return RecoPlan(DaggerReconstructionAlgorithm; parameter = params)
 end

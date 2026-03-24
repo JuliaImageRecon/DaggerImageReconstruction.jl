@@ -9,9 +9,12 @@ using Test
 
 @everywhere include(joinpath(@__DIR__(), "..", "docs", "src", "literate", "example", "example_include_all.jl"))
 
+@everywhere abstract type AbstractTestBase <: AbstractImageReconstructionAlgorithm end
+@everywhere abstract type AbstractTestParameters <: AbstractImageReconstructionParameters end
+
 
 @testset "DaggerImageReconstruction.jl" begin
     include("DaggerRecoPlan.jl")
     include("DaggerRecoAlgorithm.jl")
-    include("DaggerReconstructionProcess.jl")
+    include("DaggerReconstructionUtility.jl")
 end

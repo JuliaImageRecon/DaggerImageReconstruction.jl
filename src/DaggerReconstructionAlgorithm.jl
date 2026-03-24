@@ -27,24 +27,10 @@ end
 
 Struct representing a Dagger-based reconstruction algorithm, which encapsulates the distrubted reconstruction execution and manages the outputs.
 """
-mutable struct DaggerReconstructionAlgorithm{T} <: AbstractDaggerReconstructionAlgorithm{T}
-  parameter::DaggerReconstructionParameter{T}
-  output::Channel{Any}
+@reconstruction struct DaggerReconstructionAlgorithm{T} <: AbstractDaggerReconstructionAlgorithm{T}
+  @parameter parameter::DaggerReconstructionParameter{T}
 end
-DaggerReconstructionAlgorithm(param::DaggerReconstructionParameter) = DaggerReconstructionAlgorithm(param, Channel{Any}(Inf))
-AbstractImageReconstruction.parameter(algo::DaggerReconstructionAlgorithm) = algo.parameter
-Base.lock(algo::DaggerReconstructionAlgorithm) = lock(algo.output)
-Base.unlock(algo::DaggerReconstructionAlgorithm) = unlock(algo.output)
-Base.take!(algo::DaggerReconstructionAlgorithm) = Base.take!(algo.output)
-function Base.put!(algo::DaggerReconstructionAlgorithm, data)
-  lock(algo) do
-    put!(algo.output, process(algo, algo.parameter, data))
-  end
-end
-Base.wait(algo::DaggerReconstructionAlgorithm) = wait(algo.output)
-Base.isready(algo::DaggerReconstructionAlgorithm) = isready(algo.output)
-
-function AbstractImageReconstruction.process(algo::DaggerReconstructionAlgorithm, params::DaggerReconstructionParameter, data)
+function (params::DaggerReconstructionParameter)(algo::DaggerReconstructionAlgorithm, data)
   result = fetch(Dagger.spawn(params.algo) do algo
       reconstruct(algo, data)
     end
@@ -81,7 +67,14 @@ function AbstractImageReconstruction.build(plan::RecoPlan{DaggerReconstructionPa
 end
 
 # Do not serialize the the worker and collect the remote algo
-AbstractImageReconstruction.toDictValue!(dict, plan::RecoPlan{DaggerReconstructionParameter}) = dict["algo"] = fetch(Dagger.@spawn toDict(getchunk(plan, :algo)))
+function StructUtils.lower(style::RecoPlanStyle, plan::RecoPlan{T}) where T <: DaggerReconstructionParameter
+  dict = Dict{String, Any}(
+    MODULE_TAG => string(parentmodule(T)),
+    TYPE_TAG => "RecoPlan{$(nameof(T))}"
+  )
+  dict["algo"] = fetch(Dagger.@spawn StructUtils.lower(style, getchunk(plan, :algo)))
+  return dict
+end
 
 function AbstractImageReconstruction.showtree(io::IO, property::RecoPlan{DaggerReconstructionParameter}, indent::String, depth::Int)
   if !ismissing(property.algo)
@@ -108,13 +101,13 @@ function AbstractImageReconstruction.clear!(plan::RecoPlan{DaggerReconstructionP
 end
 
 # First load the plan in the current worker, then make it chunk for the current worker. Afterwards with setproperty! one can move the chunk to another process 
-function AbstractImageReconstruction.loadPlan!(plan::RecoPlan{DaggerReconstructionParameter}, dict::Dict{String, Any}, modDict)
+function StructUtils.make!(style::RecoPlanStyle, plan::RecoPlan{DaggerReconstructionParameter}, dict::Dict{String, Any})
   algo = missing
   if haskey(dict, "algo")
-    algo = AbstractImageReconstruction.loadPlan!(dict["algo"], modDict)
+    algo, _ = StructUtils.make(style, RecoPlan, dict["algo"])
     parent!(algo, plan)
   end
-  setchunk(plan, :algo, Dagger.@mutable worker = myid() algo)
+  setchunk!(plan, :algo, Dagger.@mutable worker = myid() algo)
   plan.worker = myid()
   return plan
 end
@@ -161,7 +154,8 @@ function Base.setproperty!(plan::RecoPlan{DaggerReconstructionParameter}, name::
     end
     getfield(plan, :values)[name][] = value
   elseif name == :algo
-    setchunk!(plan, :algo, Dagger.@mutable worker = plan.worker value)
+    worker = ismissing(plan.worker) ? myid() : plan.worker
+    setchunk!(plan, :algo, Dagger.@mutable worker = worker value)
   end
 
   return Base.getproperty(plan, name)

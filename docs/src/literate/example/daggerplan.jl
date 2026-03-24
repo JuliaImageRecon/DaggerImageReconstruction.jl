@@ -56,12 +56,16 @@ fig
 
 # ## Serialization
 # The serialization process of `DaggerReconstructionAlgorithm` and `DaggerReconstructionParameter` ignores the worker parameter and retrieves the entire plan tree:
-toTOML(stdout, plan_dagger)
+setAll!(plan_dagger, :reg, missing)
+setAll!(plan_dagger, :angles, missing)
+savePlan(stdout, plan_dagger)
 
-# It is also possible to directly load and distribute a serialized plan from a file using:
-# ```julia
-# loadDaggerPlan(filename, modules; worker = worker)
-# ```
+# It is also possible to directly load and distribute a serialized plan from a file using `loadDaggerPlan`:
+clear!(plan_iter)
+io = IOBuffer()
+savePlan(io, plan_iter)
+seekstart(io)
+loadDaggerPlan(io, [OurRadonReco]; worker = worker)
 # This automatically wraps everything in a `DaggerReconstructionAlgorithm`.
 
 # ## Observables
@@ -70,7 +74,7 @@ toTOML(stdout, plan_dagger)
 # This functionality also applies to the `loadDaggerPlan` method mentioned earlier.
 
 # Additionally, listeners can be attached across workers using the Observable interface on a `DaggerRecoPlan`:
-using Observables
+using AbstractImageReconstruction.Observables
 localVariable = 3
 plan_iter_remote = plan_dagger.parameter.algo
 fun = on(plan_iter_remote.parameter.pre, :frames) do newval
